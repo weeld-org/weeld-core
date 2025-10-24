@@ -57,6 +57,31 @@ $ bun run test:e2e
 $ bun run test:cov
 ```
 
+## Drizzle ORM (PostgreSQL)
+
+Configuration:
+
+- Schéma: `src/db/schema.ts`
+- Config: `drizzle.config.ts`
+- URL DB via `.env` -> `DATABASE_URL`
+
+Commandes utiles:
+
+```bash
+# Démarrer la base Postgres (Docker)
+npm run db:up
+
+# Générer les migrations depuis le schéma TypeScript
+npm run drizzle:generate
+
+# Appliquer les migrations à la base
+npm run drizzle:migrate
+
+# Ouvrir Drizzle Studio (GUI)
+npm run drizzle:studio
+```
+
+
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.

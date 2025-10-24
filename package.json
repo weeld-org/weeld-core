@@ -24,13 +24,19 @@
     "db:down": "docker compose down",
     "db:down:v": "docker compose down -v",
     "db:logs": "docker compose logs -f db",
-    "db:psql": "docker exec -it weeld-core-db psql -U ${POSTGRES_USER:-weeld} -d ${POSTGRES_DB:-weeld_core}"
+    "db:psql": "docker exec -it weeld-core-db psql -U ${POSTGRES_USER:-weeld} -d ${POSTGRES_DB:-weeld_core}",
+    "drizzle:generate": "drizzle-kit generate",
+    "drizzle:migrate": "drizzle-kit migrate",
+    "drizzle:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/platform-fastify": "^11.1.7",
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.36.4",
+    "pg": "^8.13.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"
   },
@@ -47,6 +53,7 @@
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",
+    "drizzle-kit": "^0.26.2",
     "globals": "^16.0.0",
     "jest": "^30.0.0",
     "prettier": "^3.4.2",

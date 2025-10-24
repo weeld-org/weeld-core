@@ -1,4 +1,4 @@
-.PHONY: up down down-v logs psql qa lint test test-cov build format format-check start start-dev
+.PHONY: up down down-v logs psql qa lint test test-cov build format format-check start start-dev drizzle-generate drizzle-migrate drizzle-studio
 
 # Defaults if .env not loaded manually when calling make
 POSTGRES_USER ?= weeld
@@ -49,3 +49,12 @@ start:
 start-dev:
 	npm run start:dev
 
+# Drizzle
+drizzle-generate:
+	npm run drizzle:generate
+
+drizzle-migrate:
+	npm run drizzle:migrate
+
+drizzle-studio:
+	npm run drizzle:studio
