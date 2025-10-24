@@ -13,4 +13,3 @@ export class AuthController {
     return { access_token: 'demo-token' };
   }
 }
-

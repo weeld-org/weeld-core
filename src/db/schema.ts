@@ -1,4 +1,10 @@
-import { pgTable, serial, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  serial,
+  text,
+  timestamp,
+  uniqueIndex,
+} from 'drizzle-orm/pg-core';
 
 export const users = pgTable(
   'users',
@@ -13,4 +19,3 @@ export const users = pgTable(
     emailIdx: uniqueIndex('users_email_unique').on(table.email),
   }),
 );
-

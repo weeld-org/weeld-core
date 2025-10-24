@@ -27,4 +27,3 @@ export const DRIZZLE = 'DRIZZLE';
   exports: [PG_POOL, DRIZZLE],
 })
 export class DatabaseModule {}
-
