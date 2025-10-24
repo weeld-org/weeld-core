@@ -27,8 +27,10 @@
     "db:psql": "docker exec -it weeld-core-db psql -U ${POSTGRES_USER:-weeld} -d ${POSTGRES_DB:-weeld_core}",
     "drizzle:generate": "drizzle-kit generate",
     "drizzle:migrate": "drizzle-kit migrate",
-    "drizzle:studio": "drizzle-kit studio"
+    "drizzle:studio": "drizzle-kit studio",
+    "seed": "ts-node -r tsconfig-paths/register seeds/seed.ts"
   },
+  "bin": {},
   "dependencies": {
     "@fastify/formbody": "^8.0.2",
     "@fastify/swagger": "^9.4.1",
@@ -44,6 +46,7 @@
     "class-validator": "^0.14.1",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.36.4",
+    "@nestjs/jwt": "^10.2.0",
     "pg": "^8.13.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"

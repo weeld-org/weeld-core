@@ -21,7 +21,11 @@ export class TenantsController {
 
   @Post()
   create(@Body() dto: CreateTenantDto): Promise<Tenant> {
-    return this.service.create({ name: dto.name, slug: dto.slug });
+    return this.service.create({
+      name: dto.name,
+      slug: dto.slug,
+      companyNumber: dto.companyNumber,
+    });
   }
 
   @Get()

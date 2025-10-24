@@ -7,10 +7,16 @@ import { tenants, type NewTenant, type Tenant } from '../db/schema';
 export class TenantsService {
   constructor(@Inject(DRIZZLE) private readonly db: Database) {}
 
-  async create(input: NewTenant): Promise<Tenant> {
+  async create(
+    input: Pick<NewTenant, 'name' | 'slug' | 'companyNumber'>,
+  ): Promise<Tenant> {
     const [created] = await this.db
       .insert(tenants)
-      .values({ name: input.name, slug: input.slug })
+      .values({
+        name: input.name,
+        slug: input.slug,
+        companyNumber: input.companyNumber,
+      })
       .returning();
     return created;
   }

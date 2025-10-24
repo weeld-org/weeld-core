@@ -14,6 +14,7 @@ describe('TenantsController', () => {
           id: 'uuid',
           name: input.name,
           slug: input.slug,
+          companyNumber: 'FR00000000000000',
           createdAt: new Date(),
         }),
       findAll: () => Promise.resolve([]),
@@ -22,6 +23,7 @@ describe('TenantsController', () => {
           id: 'uuid',
           name: 'n',
           slug: 's',
+          companyNumber: 'FR00000000000000',
           createdAt: new Date(),
         }),
       update: () =>
@@ -29,6 +31,7 @@ describe('TenantsController', () => {
           id: 'uuid',
           name: 'n',
           slug: 's',
+          companyNumber: 'FR00000000000000',
           createdAt: new Date(),
         }),
       remove: () => Promise.resolve(),

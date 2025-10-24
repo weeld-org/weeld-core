@@ -16,4 +16,10 @@ export class CreateTenantDto {
   })
   @MaxLength(120)
   slug!: string;
+
+  @ApiProperty({ example: 'FR12345678900012' })
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(40)
+  companyNumber!: string;
 }

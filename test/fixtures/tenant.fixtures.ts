@@ -6,6 +6,7 @@ export const makeCreateTenantDto = (
 ): CreateTenantDto => ({
   name: 'Acme Corp',
   slug: 'acme-corp',
+  companyNumber: 'FR00000000000000',
   ...overrides,
 });
 
