@@ -53,10 +53,10 @@ start-dev:
 	npm run start:dev
 
 # Drizzle
-drizzle-generate:
+diff:
 	npm run drizzle:generate
 
-drizzle-migrate:
+migration:
 	npm run drizzle:migrate
 
 drizzle-studio:

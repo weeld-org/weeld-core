@@ -2,9 +2,11 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Pool } from 'pg';
 import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
+import * as schema from './schema';
 
 export const PG_POOL = 'PG_POOL';
 export const DRIZZLE = 'DRIZZLE';
+export type Database = NodePgDatabase<typeof schema>;
 
 @Module({
   imports: [ConfigModule.forRoot()],
@@ -25,11 +27,9 @@ export const DRIZZLE = 'DRIZZLE';
     },
     {
       provide: DRIZZLE,
-      useFactory: (
-        pool: Pool /*, configService: ConfigService*/,
-      ): NodePgDatabase => {
+      useFactory: (pool: Pool): Database => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        return drizzle(pool) as NodePgDatabase;
+        return drizzle(pool, { schema }) as Database;
       },
       inject: [PG_POOL],
     },
