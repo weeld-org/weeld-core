@@ -8,6 +8,7 @@
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
@@ -18,7 +19,12 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "qa": "npm run format && npm run lint && npm run test:cov"
+    "qa": "npm run format && npm run lint && npm run test:cov",
+    "db:up": "docker compose up -d db",
+    "db:down": "docker compose down",
+    "db:down:v": "docker compose down -v",
+    "db:logs": "docker compose logs -f db",
+    "db:psql": "docker exec -it weeld-core-db psql -U ${POSTGRES_USER:-weeld} -d ${POSTGRES_DB:-weeld_core}"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
