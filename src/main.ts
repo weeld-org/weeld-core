@@ -6,6 +6,7 @@ import {
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import formbody from '@fastify/formbody';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -20,6 +21,9 @@ async function bootstrap() {
       transformOptions: { enableImplicitConversion: true },
     }),
   );
+
+  // Parse application/x-www-form-urlencoded bodies for routes expecting it
+  await app.register(formbody);
 
   if (process.env.NODE_ENV !== 'production') {
     const config = new DocumentBuilder()
