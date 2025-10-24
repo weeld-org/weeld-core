@@ -182,19 +182,12 @@ Rendering is fully dynamic:
 
 ## 🧰 Development Setup
 
-1) Install dependencies
+1) Clone and install
 
 ```bash
 git clone https://github.com/weeld-org/weeld-core
 cd weeld-core
-In src/db/database.module.ts around line 4, replace the side-effect import
-"dotenv/config" with NestJS ConfigModule usage: remove the top-level dotenv
-import, add ConfigModule.forRoot() to the module's imports, inject ConfigService
-into the PG pool provider factory, read and validate DATABASE_URL via
-configService.get<string>('DATABASE_URL') throwing a clear error if missing,
-construct the pg Pool with that connection string, and mirror this pattern for
-the Drizzle provider (injecting Pool/ConfigService as needed); ensure PG_POOL
-and DRIZZLE providers are exported so other modules can consume them.npm install
+npm install
 ```
 
 2) Start Postgres
@@ -209,11 +202,34 @@ docker compose up -d db
 npm run drizzle:migrate
 ```
 
-4) Start API + Frontend
+4) Start API
 
 ```bash
 npm run start:dev
 ```
+
+Optional: using Make targets
+
+```bash
+make up              # start Postgres (docker compose up -d db)
+make drizzle-migrate # run DB migrations
+make start-dev       # start API in watch mode
+```
+
+---
+
+## ⚙️ Configuration
+
+- Uses NestJS `ConfigModule` to load environment variables (no direct `dotenv` import needed).
+- Ensure `DATABASE_URL` is set in your environment or `.env` file, for example:
+
+```env
+DATABASE_URL=postgres://weeld:weeld@localhost:5432/weeld_core
+```
+
+- The DB provider validates `DATABASE_URL` on startup and fails fast if missing.
+
+- See `.env.example` for a ready-to-copy template.
 
 ---
 

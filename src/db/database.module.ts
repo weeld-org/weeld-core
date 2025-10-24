@@ -29,8 +29,7 @@ export const DRIZZLE = 'DRIZZLE';
         pool: Pool /*, configService: ConfigService*/,
       ): NodePgDatabase => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        const db = drizzle(pool) as NodePgDatabase;
-        return db;
+        return drizzle(pool) as NodePgDatabase;
       },
       inject: [PG_POOL],
     },
