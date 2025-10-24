@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { Pool } from 'pg';
-import { drizzle } from 'drizzle-orm/node-postgres';
+import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import 'dotenv/config';
 
 export const PG_POOL = 'PG_POOL';
@@ -10,17 +10,24 @@ export const DRIZZLE = 'DRIZZLE';
   providers: [
     {
       provide: PG_POOL,
-      useFactory: () => {
+      useFactory: (): Pool => {
         const connectionString = process.env.DATABASE_URL;
         if (!connectionString) {
           throw new Error('DATABASE_URL is not set');
         }
-        return new Pool({ connectionString });
+        const Ctor = Pool as unknown as {
+          new (config: { connectionString: string }): Pool;
+        };
+        return new Ctor({ connectionString });
       },
     },
     {
       provide: DRIZZLE,
-      useFactory: (pool: Pool) => drizzle(pool),
+      useFactory: (pool: Pool): NodePgDatabase => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        const db = drizzle(pool) as NodePgDatabase;
+        return db;
+      },
       inject: [PG_POOL],
     },
   ],
