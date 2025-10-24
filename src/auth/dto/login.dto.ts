@@ -14,4 +14,12 @@ export class LoginDto {
   @IsString()
   @IsNotEmpty()
   password: string;
+
+  @ApiProperty({
+    example: 'FR12345678900012',
+    description: "Numéro d'entreprise (tenant)",
+  })
+  @IsString()
+  @IsNotEmpty()
+  companyNumber: string;
 }

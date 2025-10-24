@@ -20,12 +20,16 @@ export const tenants = pgTable(
       .default(sql`gen_random_uuid()`),
     name: text('name').notNull(),
     slug: text('slug').notNull(),
+    companyNumber: text('company_number').notNull(),
     createdAt: timestamp('created_at', { withTimezone: false })
       .defaultNow()
       .notNull(),
   },
   (table) => ({
     slugUnique: uniqueIndex('tenants_slug_unique').on(table.slug),
+    companyUnique: uniqueIndex('tenants_company_unique').on(
+      table.companyNumber,
+    ),
   }),
 );
 
@@ -37,6 +41,7 @@ export const users = pgTable(
       .default(sql`gen_random_uuid()`),
     email: text('email').notNull(),
     passwordHash: text('password_hash').notNull(),
+    saasAdmin: boolean('saas_admin').notNull().default(false),
     createdAt: timestamp('created_at', { withTimezone: false })
       .defaultNow()
       .notNull(),
