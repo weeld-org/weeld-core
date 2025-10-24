@@ -3,6 +3,9 @@
 # Defaults if .env not loaded manually when calling make
 POSTGRES_USER ?= weeld
 POSTGRES_DB ?= weeld_core
+# Export so child processes (npm, docker) inherit values
+export POSTGRES_USER
+export POSTGRES_DB
 
 # Docker (Postgres)
 up:

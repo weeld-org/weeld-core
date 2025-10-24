@@ -84,7 +84,7 @@ Only the UI plugins enabled for the current tenant are loaded.
 | Auth          | JWT + RBAC                     | Multi-user, tenant-aware authentication         |
 | Frontend      | Next.js + Tailwind + UI SDK    | Offline-ready PWA and dynamic plugin UI         |
 | Observability | Pino + Prometheus              | Structured logging and metrics                  |
-| Tooling       | pnpm + workspaces              | Efficient dependency sharing                    |
+| Tooling       | npm + workspaces               | Efficient dependency sharing                    |
 | Validation    | Zod                            | Contract enforcement for API and plugin schemas |
 
 ---
@@ -187,25 +187,32 @@ Rendering is fully dynamic:
 ```bash
 git clone https://github.com/weeld-org/weeld-core
 cd weeld-core
-pnpm install
+In src/db/database.module.ts around line 4, replace the side-effect import
+"dotenv/config" with NestJS ConfigModule usage: remove the top-level dotenv
+import, add ConfigModule.forRoot() to the module's imports, inject ConfigService
+into the PG pool provider factory, read and validate DATABASE_URL via
+configService.get<string>('DATABASE_URL') throwing a clear error if missing,
+construct the pg Pool with that connection string, and mirror this pattern for
+the Drizzle provider (injecting Pool/ConfigService as needed); ensure PG_POOL
+and DRIZZLE providers are exported so other modules can consume them.npm install
 ```
 
-2) Start Postgres + Redis
+2) Start Postgres
 
 ```bash
-docker compose up -d postgres redis
+docker compose up -d db
 ```
 
 3) Run migrations
 
 ```bash
-pnpm db:migrate
+npm run drizzle:migrate
 ```
 
 4) Start API + Frontend
 
 ```bash
-pnpm dev
+npm run start:dev
 ```
 
 ---
@@ -236,7 +243,7 @@ Developer philosophy:
 Scaffold a new module:
 
 ```bash
-pnpm dlx create-weeld-plugin mod-loyalty
+npx create-weeld-plugin mod-loyalty
 ```
 
 You’ll get:
