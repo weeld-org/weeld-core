@@ -289,7 +289,9 @@ Example endpoint (form inputs):
 
 ## ⚖️ License
 
-MIT License — free to use, modify, and distribute. Paid or proprietary plugins can coexist on top of the open-source core.
+Apache License 2.0 — free to use, modify, and distribute under the terms of the Apache-2.0 license. Paid or proprietary plugins can coexist on top of the open-source core.
+
+See: LICENSE-2.0
 
 ---
 
