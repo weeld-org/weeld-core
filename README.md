@@ -1,98 +1,324 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 🧭 WeelD — Core Platform
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+> WeelD is an open-source, modular SaaS platform for local businesses and artisans (bakeries, butchers, florists, cafés, and more). It provides a modern POS, warehouse and inventory management, and an extensible plugin-based architecture across backend and frontend.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## Table of Contents
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- Mission
+- Architecture Overview
+- Tech Stack
+- Multi-Tenant Design
+- Plugin Runtime
+- Development Setup
+- Roadmap
+- Create a Plugin
+- API Docs
+- Related Repositories
+- License
+- Maintainers
 
-## Project setup
+---
 
-```bash
-$ bun install
+## 🚀 Mission
+
+Build a multi-tenant cloud platform that provides:
+- A lightweight and secure core (auth, tenants, RBAC, plugin runtime)
+- Plug-and-play modules for business logic (POS, WMS, stock, delivery, loyalty, etc.)
+- A dynamic UI layer where plugins inject pages and components seamlessly
+
+Long-term goal: empower small businesses with simple, affordable, and extensible software — while enabling developers to build and publish their own modules.
+
+---
+
+## 🧩 Architecture Overview
+
+### 1) Core (NestJS + PostgreSQL + Fastify)
+
+The core provides:
+- Multi-tenant authentication and RBAC
+- Plugin loader with dynamic module injection
+- Job queue (BullMQ + Redis)
+- Event bus and webhooks
+- Row Level Security (RLS) on PostgreSQL
+- CLI tool (`weeld`) for tenants, migrations, and modules
+- Offline sync groundwork
+
+The core is intentionally minimal and evolves under LTS releases.
+
+### 2) Backend Plugins
+
+Each feature (POS, WMS, Stock, Wallet, etc.) lives as an independent plugin:
+- Published as `@weeld/mod-<slug>` on npm
+- Contains:
+  - `manifest.json` (name, version, compatibility)
+  - `register(ctx)` entrypoint
+  - SQL migrations
+  - Permissions (`pos:sale.create`, `wms:pick.read`)
+- Loaded dynamically at runtime per tenant
+
+Plugins can be official, partner, or community-maintained.
+
+### 3) Frontend Plugins (UI Extensions)
+
+The admin UI (Next.js + Tailwind + `@weeld/ui-sdk`) supports dynamic plugin injection.
+
+Each UI plugin (`@weeld/mod-<slug>-ui`) provides:
+- A `PluginUiManifest` (pages + slot components)
+- Lazy-loaded imports (code-splitting)
+- Delivery via npm (local) or remote ESM (CDN)
+
+Only the UI plugins enabled for the current tenant are loaded.
+
+---
+
+## 🏗️ Tech Stack
+
+| Layer         | Technology                     | Purpose                                         |
+| ------------- | ------------------------------ | ----------------------------------------------- |
+| Backend API   | NestJS + Fastify               | Modular, high-performance HTTP                  |
+| Database      | PostgreSQL + Drizzle ORM       | SQL-first ORM with type-safe queries and RLS    |
+| Queue         | BullMQ + Redis                 | Asynchronous jobs and background workers        |
+| Cache         | Redis                          | Sessions, rate limits, ephemeral data           |
+| Auth          | JWT + RBAC                     | Multi-user, tenant-aware authentication         |
+| Frontend      | Next.js + Tailwind + UI SDK    | Offline-ready PWA and dynamic plugin UI         |
+| Observability | Pino + Prometheus              | Structured logging and metrics                  |
+| Tooling       | npm + workspaces               | Efficient dependency sharing                    |
+| Validation    | Zod                            | Contract enforcement for API and plugin schemas |
+
+---
+
+## 🌍 Multi-Tenant Design
+
+### Goal
+Allow multiple businesses (tenants) to run on one infrastructure, securely isolated.
+
+### Mechanism
+- Each row in the database includes a `tenant_id` column.
+- PostgreSQL Row Level Security (RLS) enforces isolation:
+
+```sql
+CREATE POLICY tenant_isolation ON sales
+  FOR ALL
+  USING (tenant_id = current_setting('weeld.tenant_id')::uuid);
 ```
 
-## Compile and run the project
+A Nest middleware sets the tenant for each request using a scoped DB setting:
 
-```bash
-# development
-$ bun run start
-
-# watch mode
-$ bun run start:dev
-
-# production mode
-$ bun run start:prod
+```ts
+// example middleware sketch
+requestContext.run({ tenantId }, async () => {
+  await db.execute(sql`SET LOCAL weeld.tenant_id = ${tenantId}::uuid`);
+  return next();
+});
 ```
 
-## Run tests
+Benefits:
+- One shared database → simpler operations
+- True tenant isolation at the DB layer
+- Easy scaling across many clients
 
-```bash
-# unit tests
-$ bun run test
+---
 
-# e2e tests
-$ bun run test:e2e
+## ⚙️ Plugin Runtime
 
-# test coverage
-$ bun run test:cov
+### Backend
+
+The core loads plugins dynamically at startup or per-tenant activation:
+
+```ts
+for (const mod of enabledPlugins(tenantId)) {
+  const entry = await import(resolve(mod.package));
+  validateManifest(entry.meta, sdkVersion);
+  const ctx = makePluginContext({ tenantId });
+  await runMigrations(entry);
+  await entry.register(ctx);
+}
 ```
 
-## Deployment
+Each plugin receives a sandboxed context with only allowed APIs:
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ bun install -g @nestjs/mau
-$ mau deploy
+```ts
+type PluginContext = {
+  http: FastifyInstance;
+  db: DrizzleDatabase;
+  events: EventBus;
+  queue: JobQueue;
+  rbac: RBAC;
+  cache: CacheManager;
+  files: FileService;
+  webhooks: WebhookService;
+  logger: Logger;
+  config: Record<string, any>;
+  secrets: (key: string) => string | undefined;
+};
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+No plugin can access core internals directly — everything goes through `ctx`.
 
-## Resources
+### Frontend
 
-Check out a few resources that may come in handy when working with NestJS:
+The frontend renders UI plugins discovered from an API endpoint, e.g. `/api/plugins/ui/enabled`:
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```json
+[
+  {
+    "name": "@weeld/mod-wms-ui",
+    "source": { "type": "npm", "specifier": "@weeld/mod-wms-ui" },
+    "version": "0.1.0"
+  }
+]
+```
 
-## Support
+Rendering is fully dynamic:
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```tsx
+<SlotRenderer slot="Dashboard.Card" />
+<PluginPageRouter path="/admin/wms" />
+```
 
-## Stay in touch
+---
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## 🧰 Development Setup
 
-## License
+1) Clone and install
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+```bash
+git clone https://github.com/weeld-org/weeld-core
+cd weeld-core
+npm install
+```
+
+2) Start Postgres
+
+```bash
+docker compose up -d db
+```
+
+3) Run migrations
+
+```bash
+npm run drizzle:migrate
+```
+
+4) Start API
+
+```bash
+npm run start:dev
+```
+
+Optional: using Make targets
+
+```bash
+make up              # start Postgres (docker compose up -d db)
+make drizzle-migrate # run DB migrations
+make start-dev       # start API in watch mode
+```
+
+---
+
+## ⚙️ Configuration
+
+- Uses NestJS `ConfigModule` to load environment variables (no direct `dotenv` import needed).
+- Ensure `DATABASE_URL` is set in your environment or `.env` file, for example:
+
+```env
+DATABASE_URL=postgres://weeld:weeld@localhost:5432/weeld_core
+```
+
+- The DB provider validates `DATABASE_URL` on startup and fails fast if missing.
+
+- See `.env.example` for a ready-to-copy template.
+
+---
+
+## 🔄 Roadmap
+
+| Phase | Goal                                      | Status          |
+| ----- | ----------------------------------------- | --------------- |
+| 1     | Core API (Nest, Drizzle, RLS, CLI)        | ✅ Done         |
+| 2     | Plugin system (loader, context, runtime)  | 🚧 In progress  |
+| 3     | UI SDK (dynamic imports, slots, router)   | 🚧 In progress  |
+| 4     | Official modules (POS, WMS, Stock)        | 🧩 Planned      |
+| 5     | Offline sync (IndexedDB + worker)         | 🧩 Planned      |
+| 6     | SaaS admin panel (billing, monitoring)    | 🧩 Planned      |
+| 7     | App store / registry                      | 🧩 Planned      |
+
+Developer philosophy:
+- Build a modern, modular POS that anyone can extend and trust.
+- Open Source First — forkable, auditable, improvable.
+- Simplicity — minimal setup for small businesses.
+- Scalability — from 10 to 10,000 tenants.
+- Transparency — documented costs, performance, and APIs.
+
+---
+
+## 🧩 Create a Plugin
+
+Scaffold a new module:
+
+```bash
+npx create-weeld-plugin mod-loyalty
+```
+
+You’ll get:
+
+```
+/src/index.ts        # register(ctx)
+/migrations/001_init.sql
+/manifest.json
+```
+
+Publish to npm:
+
+```bash
+npm publish --access public
+```
+
+Install for a tenant:
+
+```bash
+weeld plugins:install @weeld/mod-loyalty
+```
+
+---
+
+## 📚 API Docs (Swagger)
+
+- Available when `NODE_ENV` is not `production`.
+- URL: `http://localhost:3000/docs` (or `PORT` as configured).
+- Bearer Auth supported (Authorize button).
+
+Example endpoint (form inputs):
+- `POST /auth/login`
+  - Consumes `application/x-www-form-urlencoded`
+  - Fields: `username`, `password`
+
+---
+
+## 📦 Related Repositories
+
+| Repository              | Description                               |
+| ----------------------- | ----------------------------------------- |
+| weeld-core              | Main backend and API core                 |
+| weeld-mod-template      | Template for backend plugins              |
+| weeld-mod-ui-template   | Template for frontend (UI) plugins        |
+| weeld-registry          | Marketplace registry (plugins catalog)    |
+| weeld-docs              | Technical documentation site              |
+| weeld-actions           | Shared GitHub Actions workflows           |
+
+---
+
+## ⚖️ License
+
+Apache License 2.0 — free to use, modify, and distribute under the terms of the Apache-2.0 license. Paid or proprietary plugins can coexist on top of the open-source core.
+
+See: LICENSE-2.0
+
+---
+
+## 🧑‍💼 Maintainers
+
+- @Klaiment — Founder & Lead Developer
+- Community contributors — join via GitHub Discussions
